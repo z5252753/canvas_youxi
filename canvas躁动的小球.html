@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+	<head>
+		<meta charset="UTF-8">
+		<title>躁动的小球2</title>
+		<style>
+			#mc {
+				display: block;
+				background: black;
+				margin: 0 auto;
+			}
+		</style>
+	</head>
+
+	<body>
+		<canvas id="mc" width="800" height="600"></canvas>
+	</body>
+	<script type="text/javascript">
+		var mc = document.getElementById('mc'); //获取元素
+		var ctx = mc.getContext('2d'); //设置画笔
+
+		//全局变量
+		var minX = 5,
+			maxX = mc.width - 5; //x最大最小
+		var minY = 5,
+			maxY = mc.height - 5; //y轴最大最小
+		var minR = 3,
+			maxR = 5; //小球的最大半径与最小半径
+		var minS = -2,
+			maxS = 3; //小球的最大移动速度与最小的移动速度
+
+		//鼠标对象
+		var mouseObj = {
+			x: -50,
+			y: -50
+		}
+
+		//封装一个随机数
+		function sui(x, y) {
+			return Math.round(Math.random() * (y - x) + x);
+		}
+
+		//封装小球类
+		function Ball(x, y, r, bgColor, vx, vy) {
+			this.x = x;
+			this.y = y;
+			this.r = r;
+			this.bgColor = bgColor;
+			this.vx = vx;
+			this.vy = vy;
+		}
+		//设置小球创建原型对象
+		Ball.prototype.draw = function() {
+			//设置碰壁反弹
+			//x的最小与最大移动范围
+			if(this.x < this.r || this.x > mc.width - this.r) {
+				this.vx = -this.vx;
+			}
+			//y的最小与最大移动范围
+			if(this.y < this.r || this.y > mc.height - this.r) {
+				this.vy = -this.vy;
+			}
+
+			//设置小球移动
+			this.x += this.vx;
+			this.y += this.vy;
+
+			//创建小球
+			ctx.beginPath();
+			ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI);
+			ctx.fillStyle = this.bgColor;
+			ctx.fill();
+		}
+
+		//实例化小球
+		//创建盛放小球数组
+		var ballArr = [];
+
+		function createBall() {
+			var x = sui(minX, maxX); //x坐标
+			var y = sui(minY, maxY); //y坐标
+			var r = sui(minR, maxR); //r半径
+			var bgColor = 'rgb(' + sui(30, 255) + ',' + sui(30, 255) + ',' + sui(30, 255) + ')';
+			var vx = sui(minS, maxS);
+			var vy = sui(minS, maxS);
+			if(vx == 0 || vy == 0) {
+				vx += 1;
+				vy -= 1;
+			}
+
+			var ball = new Ball(x, y, r, bgColor, vx, vy); //实例化小球
+			console.log(ball);
+			ballArr.push(ball); //将实例化的小球push进数组
+		}
+
+		for(var i = 0; i < 200; i++) {
+			createBall();
+		}
+
+		console.log(ballArr);
+
+		//计时器为每个小球都添加draw 原型方法
+		var timer = setInterval(function() {
+			ctx.clearRect(0, 0, mc.width, mc.height);
+			//			panduandis();
+			//			panshubiao();
+			for(var i = 0; i < ballArr.length; i++) {
+				ballArr[i].draw();
+			}
+			var thisArr = getBall();
+			drawline(thisArr);
+		}, 25);
+
+		//		//判断两个小球之间距离
+		//		function getDis(qiu1, qiu2) {
+		//			var dis = Math.sqrt(Math.pow(qiu1.x - qiu2.x, 2) + Math.pow(qiu1.y - qiu2.y, 2));
+		//			if(dis <= 50) {
+		//				return true;
+		//			} else {
+		//				return false;
+		//			}
+		//		}
+		//
+		//		//循环判断两个球之间的距离
+		//		function panduandis() {
+		//			for(var i = 0; i < ballArr.length; i++) {
+		//				for(var j = i + 1; j < ballArr.length; j++) {
+		//					var bol = getDis(ballArr[i], ballArr[j]);
+		//					if(bol) {
+		//						getBallDis(ballArr[i], ballArr[j]);
+		//					}
+		//				}
+		//			}
+		//		}
+		//
+		//		//画线函数
+		//		function getBallDis(qiu1, qiu2) {
+		//			ctx.beginPath();
+		//			ctx.moveTo(qiu1.x, qiu1.y);
+		//			ctx.lineTo(qiu2.x, qiu2.y);
+		//			ctx.strokeStyle = 'rgb(' + sui(30, 255) + ',' + sui(30, 255) + ',' + sui(30, 255) + ')';
+		//			ctx.stroke();
+		//		}
+
+		//获取鼠标在canvas上的坐标
+		mc.onmousemove = function() {
+			var e = event || window.event;
+			var mouseX = e.clientX - mc.offsetLeft;
+			var mouseY = e.clientY - mc.offsetTop;
+
+			mouseObj = {
+				x: mouseX,
+				y: mouseY
+			}
+		}
+		
+		mc.onmouseout = function(){
+			mouseObj = {
+				x:-1,
+				y:-1
+			}
+		}
+
+		//判断进入鼠标范围内的小球
+		function getBall() {
+			var closemouve = []; //设置盛放进入鼠标范围内的小球数组
+			//循环小球数组
+			for(var i = 0; i < ballArr.length; i++){
+					//计算距离，满足条件，放入新数组
+				var a = Math.pow(ballArr[i].x - mouseObj.x, 2);
+				var b = Math.pow(ballArr[i].y - mouseObj.y, 2);
+				var bol = Math.sqrt(a + b);
+				
+				if(bol <= 100) {
+				closemouve.push(ballArr[i]);
+				}
+			}return closemouve;
+
+		}
+		
+		//小球画线
+		function drawline(arr){
+			for(var i = 0;i<arr.length-1;i++){
+				for(var j = i+1;j<arr.length;j++){
+					ctx.beginPath();
+					ctx.moveTo(arr[i].x,arr[i].y);
+					ctx.lineTo(arr[j].x,arr[j].y);
+					ctx.strokeStyle = 'rgb('+ sui(50,255) +','+sui(50,255)+','+sui(50,255)+')';
+					ctx.stroke();
+				}
+			}
+				
+		}
+		
+		
+
+		//		//判断鼠标与每个球的距离
+		//		function panshubiao() {
+		//			for(var i = 0; i < ballArr.length; i++) {
+		//				var a = Math.pow(ballArr[i].x-mouseObj.x,2);
+		//				var b = Math.pow(ballArr[i].y - mouseObj.y,2);
+		//				var bol = Math.sqrt(a+b);
+		//				
+		//				if(bol <= 50){
+		//					getBallDis(ballArr[i],mouseObj);
+		//				}
+		//			}
+		//		}
+	</script>
+
+</html>
