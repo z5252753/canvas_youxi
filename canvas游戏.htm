@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		
+		<title>canvas游戏</title>
+		<style>
+			body{
+				background: blanchedalmond;
+			}
+			#mc {
+				background: darkgoldenrod;
+				margin: 0 auto;
+				display: block;
+				box-shadow: 0 0 0 5px lightslategray;
+				position: relative
+			}
+			.box{
+				width: 600px;
+				height: 280px;
+				border: 5px solid darkgoldenrod;
+				margin: 0 auto;
+				margin-top: 20px;
+				text-align: center;
+			}
+			.box .wuzi{
+				font-family: STKaiti;
+				font-size: 60px;
+				margin: 0;
+				text-align: center;
+			}
+			.jisuan{
+				font-size: 30px;
+				font-weight: 500;
+				margin-left: 40px;
+				display: inline-block;
+				color: royalblue;
+			}
+			.jieguo{
+				font-size: 30px;
+				font-weight: 500;
+				margin-left: 40px;
+				display: inline-block;
+			}
+			.guize{
+				font-size: 20px;
+				margin: 0 40px;
+				text-align: left;
+				margin-bottom: 10px;
+			}			
+			.bnt{
+				padding: 10px 30px;
+				background: indianred;
+				color: white;
+			}
+		</style>
+	</head>
+
+	<body>
+		<canvas id="mc" width="800" height="800"></canvas>
+		<div class="box">
+			<p class="wuzi">五子棋</p>
+			<p class="jisuan">出棋：白棋</p>
+			<p class="jieguo">游戏结束：未知</p>
+			<p class="guize"><span>游戏规则：</span>玩家一执白色棋子，玩家二执黑色棋子。白色棋子先手。任何一方形成五子连珠，则游戏终止。</p>
+			<button class="bnt">再来一局</button>
+		</div>
+	
+	<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+	<script type="text/javascript">
+		var mc = document.getElementById('mc'); //获取元素
+		var ctx = mc.getContext('2d'); //设置画笔
+		
+		var isWhite = true; //设置是否轮到白棋的初始值
+		var isBlack = false; //设置该局是否赢了，如果赢了就不能走了
+		//声明一个二维数组，用来保存棋盘的信息，初始化0为没有走过，1为白棋子走过，2为黑棋子走过
+		var createArr = new Array(20);
+		
+		//将这个棋盘坐标赋值给这个二维数组
+		for(var x = 0; x < 20; x++) {
+			createArr[x] = new Array(20);
+			for(var y = 0; y < 20; y++) {
+				createArr[x][y] = 0;
+			}
+		}
+		console.log(createArr);
+		
+		//画棋盘
+		function adds() {
+			for(var i = 0; i < 800; i += 40) {
+				ctx.beginPath();
+				ctx.moveTo(0, i);
+				ctx.lineTo(800, i);
+				ctx.strokeStyle = '#2B669A';
+				ctx.stroke();
+
+				ctx.beginPath();
+				ctx.moveTo(i, 0);
+				ctx.lineTo(i, 800);
+				ctx.strokeStyle = '#2B669A';
+				ctx.stroke();
+			}
+		}
+		adds();
+
+		//点击事件
+		mc.onclick = function() {
+			var e = event || window.event;
+			var clickX = e.pageX - mc.offsetLeft;
+			var clickY = e.pageY - mc.offsetTop;
+			var x = parseInt(clickX/ 40); //计算鼠标点击的区域
+			var y = parseInt(clickY / 40);
+			if(createArr[x][y] != 0) { //判断该位置是否被下过 
+				alert('有人了!');
+				return;
+			}
+			//			
+			//判断该哪个下棋
+			if(isWhite) {
+				isWhite = false;
+				//调用创建白棋子函数
+				drawCreate(1, x, y);
+				$('.jisuan').text('出棋：黑棋');
+				
+
+			} else {
+				isWhite = true;
+				//调用创建黑棋子函数
+				drawCreate(2, x, y);
+				$('.jisuan').text('出棋：白棋');
+			}
+		}
+
+		//创建黑白棋，并赋值给棋盘二维数组。
+		function drawCreate(newcrea, x, y) { //newcrea 为黑白棋，白为1，黑为2.   X,Y数组位置
+
+			if(isBlack == true) {
+				alert('游戏结束');
+				return;
+			}
+
+			if(x > 0 && x < 40 && y > 0 && y < 40) {
+				if(newcrea == 1) {
+					createArr[x][y] = 1;
+					ctx.beginPath();
+					ctx.fillStyle = 'whitesmoke';
+					ctx.arc(x * 40, y * 40, 20, 0, 2 * Math.PI);
+					ctx.fill();
+
+				} else {
+					createArr[x][y] = 2;
+					ctx.beginPath();
+					ctx.fillStyle = 'black';
+					ctx.arc(x * 40, y * 40, 20, 0, 2 * Math.PI);
+					ctx.fill();
+				}
+				judges(x, y, newcrea);
+				console.log(x, y);
+			}
+		}
+
+		//上下左右判断
+		function judges(x, y, newcrea) {
+
+			//判断该局棋盘是否赢了
+			//设置上下左右四个方位的棋盘累计
+			var shu = 0;
+			var heng = 0;
+			var zuoshang = 0;
+			var youshang = 0;
+
+			//左右横向判断
+			//   7  
+			for(var i = x; i > 0; i--) {
+				if(createArr[i][y] != newcrea) {
+					break;
+					console.log(1);
+				}
+				heng++;
+				console.log(heng);
+			}
+
+			console.log(heng);
+			for(var i = x + 1; i < 20; i++) {
+				if(createArr[i][y] != newcrea) {
+					break;
+				}
+				heng++;
+
+			}
+			//竖直判断
+			//从下到上判断
+			for(var i = y; i >= 0; i--) {
+				if(createArr[x][i] != newcrea) {
+					break;
+				}
+				shu++;
+			}
+
+			//从上到下判断
+			for(var i = y + 1; i < 20; i++) {
+				if(createArr[x][i] != newcrea) {
+					break;
+				}
+				shu++;
+			}
+			//左上
+			
+			  for (var i = x, j = y; i >= 0, j >= 0; i--, j--) {
+              if(createArr[i][j] != newcrea){
+						break;
+					}
+				zuoshang++;		
+            }
+           for (var i = x + 1, j = y + 1; i < 15, j < 15; i++, j++) {
+               if(createArr[i][j] != newcrea){
+						break;
+					}
+				zuoshang++;		
+            }
+			//左下			
+			for (var i = x, j = y; i >= 0, j < 15; i--, j++) {
+               if(createArr[i][j] != newcrea){
+					break;
+				}
+				youshang++;
+            }
+            for (var i = x + 1, j = y - 1; i < 15, j >= 0; i++, j--) {
+               if(createArr[i][j] != newcrea){
+					break;
+				}
+				youshang++;
+            }
+   
+			
+			//判断五子连线
+			if(heng >= 5 || shu >= 5 ||zuoshang >=5 || youshang >=5) {
+				if(newcrea == 1) {
+//					console.log('白棋赢')
+					alert('白棋赢');
+					$('.jieguo').text('游戏结果：白棋赢！');
+				} else {
+//					console.log('黑棋赢')
+					alert('黑棋赢');
+					$('.jieguo').text('游戏结果：黑棋赢！');
+				}
+				isBlack = true;//判断点击事件里的赢棋。
+			}
+		}
+		$('.bnt').click(function(){
+			history.go(0);
+		});
+	</script>
+
+</body></html>
